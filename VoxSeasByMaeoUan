@@ -1,0 +1,788 @@
+repeat task.wait() until game:IsLoaded()
+repeat task.wait() until game.Players.LocalPlayer.Character
+repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui
+local Services = setmetatable({}, {__index = function(Self, Index)
+	return cloneref(game:GetService(Index))
+end})
+local Workspace = Services.Workspace
+local Lighting = Services.Lighting
+local Players = Services.Players
+local LocalPlayer = Players.LocalPlayer
+local LocalUserId = LocalPlayer.UserId
+local HttpService = Services.HttpService
+local ReplicatedStorage = Services.ReplicatedStorage
+local RunService = Services.RunService
+local VirtualUser = Services.VirtualUser
+local VirtualInputManager = Services.VirtualInputManager
+local UserInputService = Services.UserInputService
+local TeleportService = Services.TeleportService
+local GuiService = Services.GuiService
+
+local anticlip
+
+AllFuncs = {}
+Config = Config or {}
+
+function LoadSettings()
+	if readfile and writefile and isfile and isfolder then
+		if not isfolder("Maeo Uan") then
+			makefolder("Maeo Uan")
+		end
+		if not isfolder("Maeo Uan/Vox Seas/") then
+			makefolder("Maeo Uan/Vox Seas/")
+		end
+		if not isfile("Maeo Uan/Vox Seas/" .. LocalPlayer.Name .. ".json") then
+			writefile("Maeo Uan/Vox Seas/" .. LocalPlayer.Name .. ".json", HttpService:JSONEncode(Config))
+		else
+			local Decode = HttpService:JSONDecode(readfile("Maeo Uan/Vox Seas/" .. LocalPlayer.Name .. ".json"))
+			for i,v in pairs(Decode) do
+				Config[i] = v
+			end
+		end
+	else
+		return warn("Executor not support SAVE system")
+	end
+end
+function SaveSettings()
+	if readfile and writefile and isfile and isfolder then
+		if not isfile("Maeo Uan/Vox Seas/" .. LocalPlayer.Name .. ".json") then
+			LoadSettings()
+		else
+			local Decode = HttpService:JSONDecode(readfile("Maeo Uan/Vox Seas/" .. LocalPlayer.Name .. ".json"))
+			local Array = {}
+			for i,v in pairs(Config) do
+				Array[i] = v
+			end
+			writefile("Maeo Uan/Vox Seas/" .. LocalPlayer.Name .. ".json", HttpService:JSONEncode(Array))
+		end
+	else
+		return warn("Executor not support SAVE system")
+	end
+end
+type tg_callback = {
+	["SetValue"]: (boolean) -> ()
+}
+type tg_data = {
+	["Title"]: string,
+	["Default"]: boolean?,
+	["Callback"]: ((boolean) -> ())?
+}
+local function AddToggle(Where: SharedTable, data: tg_data): tg_callback?
+	data.Default = data.Default or false
+	local threadRunning
+	local oldCallback = data.Callback
+	data.Callback = function(state: boolean)
+		Config[data.Title] = state
+		local fn = AllFuncs[data.Title]
+		if fn then
+			if state then
+				threadRunning = task.spawn(fn)
+			elseif threadRunning then
+				task.cancel(threadRunning)
+				threadRunning = nil
+			end
+		end
+		if oldCallback then
+			oldCallback(state)
+		end
+		SaveSettings()
+	end
+	return Where:Toggle({
+		Title = data.Title,
+		Value = data.Default,
+		Callback = data.Callback
+	})
+end
+type dd_data = {
+	Title: string,
+	Desc: string?,
+	Image: string?,
+	List: {string},
+	Value: {string} | string | number,
+	Multi: boolean?,
+	Callback: (any) -> ()
+}
+local function AddDropdown(Where: any, data: dd_data): any?
+	local oldCallback = data.Callback
+	data.Callback = function(value)
+		Config[data.Title] = value
+		SaveSettings()
+		if oldCallback then
+			oldCallback(value)
+		end
+	end
+	return Where:Dropdown({
+		Title = data.Title,
+		Desc = data.Desc,
+		Image = data.Image,
+		List = data.List,
+		Value = data.Value,
+		Multi = data.Multi or false,
+		Callback = data.Callback
+	})
+end
+type sl_data = {
+	["Title"]: string,
+	["Desc"]: string?,
+	["Image"]: string?,
+	["Default"]: number?,
+	["Min"]: number,
+	["Max"]: number,
+	["Rounding"]: number,
+	["Callback"]: (number) -> any
+}
+local function AddSlider(Where: SharedTable, data: sl_data): tg_callback?
+	Config[data.Title] = data.Default or data.Min
+	local old_callback = data.Callback
+	data.Callback = function(num)
+		Config[data.Title] = num
+		SaveSettings()
+		return old_callback(num)
+	end
+	return Where:Slider({
+		Title = data.Title,
+		Desc = data.Desc,
+		Image = data.Image,
+		Min = data.Min,
+		Max = data.Max,
+		Value = data.Default,
+		Rounding = data.Rounding,
+		Callback = data.Callback
+	})
+end
+type bt_data = {
+	Title: string,
+	Description: string?,
+	Image: string?,
+	Callback: any
+}
+local function AddButton(Where: SharedTable, data: bt_data)
+	local DataConverted = {
+		Title = data.Title,
+		Desc = data.Description,
+		Image = data.Image,
+		Callback = data.Callback
+	}
+	return Where:Button(DataConverted)
+end
+type para_data = {
+	Title: string,
+	Content: string?,
+	Image: string?
+}
+local function AddLabel(Where: SharedTable, data: para_data)
+	local DataConverted = {
+		Title = data.Title,
+		Desc = data.Content,
+		Image = data.Image
+	}
+	return Where:Label(DataConverted)
+end
+
+task.spawn(function()
+	while task.wait() do
+		pcall(function()
+			local isFarming = Config["Tp Select Location"] or Config["Tp Select Npc"] or Config["Auto Farm Select Mob"] or Config["Auto Sea Beast"]
+			if not anticlip and isFarming then
+				for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+					if v:IsA("BasePart") then
+						v.CanCollide = false
+					end
+				end
+				if not LocalPlayer.Character.PrimaryPart:FindFirstChild("Velocity") then
+					local v = Instance.new("BodyVelocity",LocalPlayer.Character.PrimaryPart)
+					v.Name = "Velocity"
+					v.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+					v.Velocity = Vector3.new(0,0,0)
+				end
+			else
+				if LocalPlayer.Character.PrimaryPart:FindFirstChild("Velocity") then
+					LocalPlayer.Character.PrimaryPart:FindFirstChild("Velocity"):Destroy()
+				end
+			end
+		end)
+	end
+end)
+
+
+EquipWeapon = function(...)
+	local Get = { ... }
+	if Get[1] and Get[1] ~= "" then
+		if LocalPlayer.Backpack:FindFirstChild(tostring(Get[1])) then
+			local tool = LocalPlayer.Backpack:FindFirstChild(tostring(Get[1]))
+			task.wait()
+			LocalPlayer.Character.Humanoid:EquipTool(tool)
+		end
+	end
+end
+
+NPCList = {}
+MobsName = {}
+
+local SelectFarmMob = MobsName[1] or nil
+local SelectedNPC = NPCList[1] or nil
+
+local TeleportLocations = {
+	["Air Jump"] = CFrame.new(3272.91992, 80.2837372, -4168.47998, 1, 0, 0, 0, 1, 0, 0, 0, 1),
+	["Ashforge Bastion"] = CFrame.new(4050.42139, -1407.29724, -8088.87695, 1, 0, 0, 0, 1, 0, 0, 0, 1),
+	["Central Town"] = CFrame.new(2039.75745, 92.8296509, 593.561279, -0.965929747, 0, -0.258804798, 0, 1, 0, 0.258804798, 0, -0.965929747),
+	["Coliseum"] = CFrame.new(-4136.40332, -0.184899807, -2431.8689, -0.709507823, 0, 0.704697609, 0, 1, 0, -0.704697609, 0, -0.709507823),
+	["Dark Arena"] = CFrame.new(-5394.69531, 20.9786854, 2131.09082, 1, 0, 0, 0, 1, 0, 0, 0, 1),
+	["Foosha Village"] = CFrame.new(1666.15942, 60.3700294, -980.832397, 0.199607015, -0, -0.979876101, 0, 1, -0, 0.979876101, 0, 0.199607015),
+	["Fountain"] = CFrame.new(11044.1777, 297.897278, 767.625977, 0.999829352, 0, 0.0184721258, 0, 1, 0, -0.0184721258, 0, 0.999829352),
+	["Frost Island"] = CFrame.new(-778.603271, 121.59742, -200.19017, -0.982488275, 0, -0.186325014, 0, 1, 0, 0.186325014, 0, -0.982488275),
+	["Marine Ford"] = CFrame.new(-758.341919, 106.421036, -4891.03418, 0.676866055, -0.112547696, 0.727451265, 0.111930445, 0.992487133, 0.0494056679, -0.727546513, 0.04798292, 0.684378386),
+	["Marine Island"] = CFrame.new(5084.67041, 143.451065, -2849.65405, -0.171070218, -5.55732222e-05, -0.985259056, 5.55732222e-05, 1, -6.60538353e-05, 0.985259056, -6.60538353e-05, -0.171070218),
+	["Orange Town"] = CFrame.new(-837.747681, 121.598526, 2921.83789, -0.933674097, -0.0474138446, 0.354972303, -0.0323541872, 0.9983114, 0.0482446924, -0.356660366, 0.0335599631, -0.933631539),
+	["Prison"] = CFrame.new(1693.58179, 242.269333, 3870.13647, 0.983647585, 0, 0.180103794, 0, 1, 0, -0.180103794, 0, 0.983647585),
+	["Sandstorm Island"] = CFrame.new(6091.81641, 165.458588, 5296.30908, 0.190516412, -0, -0.981684029, 0, 1, -0, 0.981684029, 0, 0.190516412),
+	["Sharkman Park"] = CFrame.new(10841.7529, 149.405914, -3429.22998, -0.735953927, -0.0155594973, 0.676852763, -0.0172527134, 0.999842227, 0.00422520144, -0.676811755, -0.00856799446, -0.736106277),
+	["Shipwreck"] = CFrame.new(342.212341, 1.07004738, 6059.96191, -0.429489255, -0.268271863, -0.862304628, 1.65551901e-05, 0.954854667, -0.297073364, 0.903072059, -0.127604067, -0.410095334),
+	["Skypie Down"] = CFrame.new(7948.78564, 395.485016, -5113.61133, -0.782074213, 0, 0.623185515, 0, 1, 0, -0.623185515, 0, -0.782074213),
+	["Skypie Upper"] = CFrame.new(6926.26758, 1000.80078, -5739.48047, 0.474434793, -0, -0.880290687, 0, 1, -0, 0.880290687, 0, 0.474434793),
+	["Vulcan Island"] = CFrame.new(4158.97412, 133.766876, -9205.94336, -0.999776363, 0, 0.0211477112, 0, 1, 0, -0.0211477112, 0, -0.999776363),
+	["Werewolf's Island"] = CFrame.new(5910.94678, 126.9077, 655.520508, 0.40539825, -0, -0.914140165, 0, 1, -0, 0.914140165, 0, 0.40539825),
+}
+local LocationList = {}
+for locationName, _ in pairs(TeleportLocations) do
+	table.insert(LocationList, locationName)
+end
+
+local SelectedLocation = LocationList[1] or nil
+
+function TP(P)
+	local Distance = (P.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude 
+	local Speed = 200
+	tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear)
+	tween = tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = P})
+	tween:Play()
+end
+
+local methodss = function()
+	if Config['Method'] and Config['Distance'] then
+		if Config['Method'] == "Behind" then
+			return CFrame.new(0, 0,Config['Distance'])
+		elseif Config['Method'] == "Below" then
+			return CFrame.new(0,-Config['Distance'],0) * CFrame.Angles(math.rad(90), 0, 0)
+		elseif Config['Method'] == "Over" then
+			return CFrame.new(0,Config['Distance'], 0) * CFrame.Angles(math.rad(-90), 0, 0)
+		end
+	end
+end
+
+AllFuncs["Tp Select Location"] = function()
+	while Config["Tp Select Location"] do
+		local targetLocation = TeleportLocations[SelectedLocation]
+		if targetLocation and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+			TP(targetLocation)
+		end
+		wait(0.1)
+	end
+end
+
+for _,v in next, workspace.IgnoreList.Int.NPCs.Shops:GetChildren() do
+	if v:IsA("Folder") then
+		if v:FindFirstChildOfClass("Model") then
+			for _,NpcShop in next, v:GetChildren() do
+				if NpcShop:IsA("Model") then
+					table.insert(NPCList, NpcShop.Name)
+				end
+			end
+		end
+	end
+end
+
+
+AllFuncs["Tp Select Npc"] = function()
+	while Config["Tp Select Npc"] do task.wait()
+		xpcall(function()
+			for _,v in next, workspace.IgnoreList.Int.NPCs.Shops:GetChildren() do
+				if v:IsA("Folder") then
+					if v:FindFirstChildOfClass("Model") then
+						for _,NpcShop in next, v:GetChildren() do
+							if NpcShop:IsA("Model") and NpcShop.Name == SelectedNPC then
+								TP(NpcShop.HumanoidRootPart.CFrame * CFrame.new(0,0,-2))
+							end
+						end
+					end
+				end
+			end
+		end, print)
+	end
+end
+
+
+
+for _,v in next, workspace.Playability.Enemys:GetChildren() do
+	if v:IsA("Folder") then
+		for _,Mob in next, v:GetChildren() do
+			local NameMob = Mob.Name:gsub("%d+$", "")
+
+			if not table.find(MobsName, NameMob) then
+				table.insert(MobsName, NameMob)
+			end
+		end
+	end
+end
+
+AllFuncs["Auto Farm Select Mob"] = function()
+	while Config["Auto Farm Select Mob"] do task.wait()
+		xpcall(function()
+			for _,v in next, workspace.Playability.Enemys:GetChildren() do
+				if v:IsA("Folder") then
+					for _,Mob in next, v:GetChildren() do
+						if Mob:IsA("Model") then
+							if Mob.Name:match("^" .. SelectFarmMob .. "%d*$") then
+								repeat task.wait()
+									local args = {
+										[1] = "DealDamage",
+										[2] = {
+											["Results"] = {
+												[1] = Mob,
+												[2] = Mob,
+												[3] = Mob,
+												[4] = Mob,
+												[5] = Mob,
+												[6] = Mob,
+												[7] = Mob,
+												[8] = Mob,
+												[9] = Mob,
+												[10] = Mob,
+											},
+											["Combo"] = 1,
+										}
+									}
+									ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CombatEvent"):FireServer(unpack(args))
+									
+									TP(Mob.HumanoidRootPart.CFrame * methodss())
+								until not Mob:GetAttribute("Respawned")
+								
+							end
+						end
+					end
+				end
+			end
+		end, print)
+	end
+end
+
+AllFuncs["Auto Skill"] = function()
+	while Config["Auto Skill"] do task.wait()
+		xpcall(function()
+			for _,Skill in next, Config["Skill"] do
+				game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode[Skill], false, game)
+				task.wait(0.1)
+				game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode[Skill], false, game)
+			end
+		end, print)
+	end
+end
+
+AllFuncs["Auto Sea Beast"] = function()
+	while Config["Auto Sea Beast"] do task.wait()
+		pcall(function()
+			if workspace.Playability.SpecialEnemys:FindFirstChild("Sea Beast") then
+				LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.Playability.SpecialEnemys["Sea Beast"].HitboxPartHead.CFrame * methodss()
+			end
+		end)
+	end
+end
+
+
+
+AllFuncs["Auto Chest"] = function()
+	while Config["Auto Chest"] do task.wait()
+		pcall(function()
+			for _, chest in pairs(workspace.IgnoreList.Int.Chests:GetChildren()) do
+				if chest:IsA("BasePart") and not chest:GetAttribute("InCooldown") then
+					LocalPlayer.Character.HumanoidRootPart.CFrame = chest.CFrame + Vector3.new(0, 5, 0)
+					task.wait(0.5)
+					break
+				end
+			end
+		end)
+	end
+end
+
+
+Weapon = {}
+
+for _,v in next, LocalPlayer.Backpack:GetChildren() do
+	if v:IsA("Tool") then
+		table.insert(Weapon, v.Name)
+	end
+end
+
+for _,v in next, LocalPlayer.Character:GetChildren() do
+	if v:IsA("Tool") then
+		table.insert(Weapon, v.Name)
+	end
+end
+
+local function UpdateWeaponList()
+	local weaponList = {}
+	for _, tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+		if tool:IsA("Tool") then
+			table.insert(weaponList, tool.Name)
+		end
+	end
+	if LocalPlayer.Character then
+		for _, tool in pairs(LocalPlayer.Character:GetChildren()) do
+			if tool:IsA("Tool") then
+				table.insert(weaponList, tool.Name)
+			end
+		end
+	end
+	return weaponList
+end
+
+local WeaponList = UpdateWeaponList()
+
+
+AllFuncs["Auto Equip"] = function()
+	while Config["Auto Equip"] do task.wait()
+		pcall(function()
+			if Config["Select Weapon"] then
+				EquipWeapon(Config["Select Weapon"])
+			end
+		end)
+	end
+end
+
+--Auto Quest
+
+local QuestData = {
+	["Quest Bandit"] = {
+		remote = function()
+			local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.DialogueEvent
+			Event:FireServer(
+				"Quests",
+				{
+					NpcName = "Bandits Hunter",
+					QuestName = "Defeat Bandits"
+				}
+			)
+		end
+	},
+	["Quest Marine"] = {
+		remote = function()
+			local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.DialogueEvent
+			Event:FireServer(
+				"Quests",
+				{
+					NpcName = "Marine Officer",
+					QuestName = "Defeat Pirates"
+				}
+			)
+		end
+	},
+	["Quest Pirate"] = {
+		remote = function()
+			local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.DialogueEvent
+			Event:FireServer(
+				"Quests",
+				{
+					NpcName = "Pirate Captain",
+					QuestName = "Collect Treasure"
+				}
+			)
+		end
+	}
+}
+
+local QuestList = {}
+for questName, _ in pairs(QuestData) do
+	table.insert(QuestList, questName)
+end
+
+local SelectedQuest = QuestList[1] or nil
+
+AllFuncs["Auto Quest"] = function()
+	while Config["Auto Quest"] do
+		task.wait(2)
+		pcall(function()
+			if SelectedQuest and QuestData[SelectedQuest] then
+				QuestData[SelectedQuest].remote()
+			end
+		end)
+	end
+end
+
+local function UpdateFruitList()
+	local FruitList = {}
+	for _, imageButton in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.AnotherMenus.FruitShopFrame.ScrollingFrame:GetChildren()) do
+		if imageButton:IsA("ImageButton") and imageButton:FindFirstChild("FruitName") then
+			local fruitName = imageButton.FruitName.Text
+			local status = imageButton.Name == "InStockFrame" and "✅" or "❌"
+			table.insert(FruitList, fruitName .. " " .. status)
+		end
+	end
+	return FruitList
+end
+
+local FruitMap = {
+	["Kilo"] = 1, ["Divide"] = 2, ["Elastic"] = 3, ["Boom"] = 4, ["Dust"] = 5,
+	["Blaze"] = 6, ["Shine"] = 7, ["Frozen"] = 8, ["Eclipse"] = 9, ["Vulcanic"] = 10,
+	["Zen"] = 11, ["Mirror"] = 12, ["Orbit"] = 13, ["Poison"] = 14
+}
+
+AllFuncs["Auto Buy Fruit"] = function()
+	while Config["Auto Buy Fruit"] do task.wait(300)
+		pcall(function()
+			if Config["Selected Fruit"] then
+				local selectedFruits = type(Config["Selected Fruit"]) == "table" and Config["Selected Fruit"] or {Config["Selected Fruit"]}
+
+				for _, selectedItem in pairs(selectedFruits) do
+					if selectedItem:find("✅") then
+						local fruitName = selectedItem:match("^(.-)%s*✅")
+						if FruitMap[fruitName] then
+							game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.FruitShopEvent:FireServer("Buy", FruitMap[fruitName])
+							break
+						end
+					end
+				end
+			end
+		end)
+	end
+end
+
+LoadSettings()
+
+
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Dummyrme/Library/refs/heads/main/Free.lua'))()
+local Window = Library:Window({
+	Title = 'Vox Sea | By Maeo Uan',
+	Desc = 'Made By Candy, Xin',
+	Icon = 97389610434708,
+	Theme = 'Amethyst',
+	Config = {
+		Keybind = Enum.KeyCode.LeftControl,
+		Size = UDim2.new(0, 530,0, 400)
+	},
+	CloseUIButton = {
+		Enabled = true,
+		Text = 'Hide'
+	}
+})
+local Tabs = {
+	Main = Window:Tab({Title = 'Main', Icon = 'align-left'}),
+	Automathic = Window:Tab({Title = 'Automathic', Icon = 'align-left'}),
+	TP = Window:Tab({Title = 'TP', Icon = 'map-pin'}),
+	Setting = Window:Tab({Title = 'Setting', Icon = 'hammer'}),
+}
+
+
+
+Tabs.Main:Section({Title = 'Farming'})
+
+AddDropdown(Tabs.Main, {
+	Title = "Select Mob",
+	Desc = "Choose Mob For Auto Farm",
+	List = MobsName,
+	Value = Config["Select Mob"],
+	Callback = function(value)
+		SelectFarmMob = value
+	end
+})
+
+AddDropdown(Tabs.Main, {
+	Title = "Select Method",
+	Desc = "Choose Method For Auto Farm",
+	List = {"Over", "Behind", "Below"},
+	Value = Config["Select Method"],
+	Callback = function(value)
+		Config["Method"] = value
+	end
+})
+
+AddSlider(Tabs.Main, {
+	Title = "Distance",
+	Desc = "",
+	Image = "",
+	Default = Config["Distance"],
+	Min = 0,
+	Max = 100,
+	Value = 10,
+	Rounding = 0,
+	Callback = function(bool)
+		Config["Distance"] = bool
+	end
+})
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Farm Select Mob",
+	Default = Config["Auto Farm Select Mob"],
+	Callback = function(bool)
+		
+	end
+})
+
+Tabs.Main:Section({Title = 'Skill'})
+
+AddDropdown(Tabs.Main, {
+	Title = "Select Skill",
+	Desc = "Choose Skill For Auto Farm",
+	List = {"Z", "X", "C", "V", "F"},
+	Multi = true,
+	Value = Config["Select Skill"],
+	Callback = function(value)
+		Config["Skill"] = value
+	end
+})
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Skill",
+	Default = Config["Auto Skill"],
+	Callback = function(bool)
+
+	end
+})
+
+
+
+Tabs.Main:Section({Title = 'Equip Weapon'})
+
+local WeaponDropdown = AddDropdown(Tabs.Main, {
+	Title = "Select Weapon",
+	Desc = "Choose Weapon For Auto Farm",
+	List = WeaponList,
+	Multi = false,
+	Value = Config["Select Weapon"],
+	Callback = function(value)
+		Config["Select Weapon"] = value
+	end
+})
+
+AddButton(Tabs.Main, {
+	Title = "Refresh Weapon",
+	Description = "Update weapon",
+	Callback = function()
+		WeaponList = UpdateWeaponList()
+		WeaponDropdown:SetList(WeaponList)
+		print("Weapon re" .. #WeaponList .. " weapons")
+	end
+})
+
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Equip",
+	Default = Config["Auto Equip"],
+	Callback = function(bool)
+
+	end
+})
+
+Tabs.Automathic:Section({Title = 'Auto Sea Beast'})
+
+
+AddToggle(Tabs.Automathic, {
+	Title = "Auto Sea Beast",
+	Default = Config["Auto Sea Beast"],
+	Callback = function(bool)
+		
+	end
+})
+
+Tabs.Automathic:Section({Title = 'Chest'})
+
+AddToggle(Tabs.Automathic, {
+	Title = "Auto Chest",
+	Default = Config["Auto Chest"],
+	Callback = function(bool)
+
+	end
+})
+
+Tabs.Automathic:Section({Title = 'Fruit'})
+
+local FruitDropdown = AddDropdown(Tabs.Automathic, {
+	Title = "Fruit Shop",
+	List = UpdateFruitList(),
+	Value = Config["Fruit Shop"],
+	Callback = function(value)
+		Config["Selected Fruit"] = value
+	end
+})
+
+task.spawn(function()
+	while true do
+		task.wait(300)
+		FruitDropdown:SetList(UpdateFruitList())
+	end
+end)
+
+AddToggle(Tabs.Automathic, {
+	Title = "Auto Buy Fruit",
+	Default = Config["Auto Buy Fruit"],
+	Callback = function(bool)
+		Config["Auto Buy Fruit"] = bool
+		if bool then
+			task.spawn(AllFuncs["Auto Buy Fruit"])
+		end
+	end
+})
+
+
+Tabs.TP:Section({Title = 'Teleport Location'})
+
+AddDropdown(Tabs.TP, {
+	Title = "Select Location",
+	Desc = "Choose teleport destination",
+	List = LocationList,
+	Value = Config["Select Location"],
+	Callback = function(value)
+		SelectedLocation = value
+	end
+})
+
+AddToggle(Tabs.TP, {
+	Title = "Tp Select Location",
+	Default = Config["Tp Select Location"],
+	Callback = function(bool)
+	end
+})
+
+
+AddDropdown(Tabs.TP, {
+	Title = "NPC TP",
+	Desc = "Choose NPC to teleport",
+	List = NPCList,
+	Value = Config["NPC TP"],
+	Callback = function(value)
+		SelectedNPC = value
+	end
+})
+
+AddToggle(Tabs.TP, {
+	Title = "Tp Select Npc",
+	Default = Config["Tp Select Npc"],
+	Callback = function(bool)
+	end
+})
+
+
+Tabs.Setting:Section({Title = 'Settings'})
+
+AddButton(Tabs.Setting, {
+	Title = "Remove Fog",
+	Desc = "",
+	Callback = function()
+		game:GetService("Lighting").Atmosphere:Destroy()
+	end
+})
+
+AddButton(Tabs.Setting, {
+	Title = "Remove Effect",
+	Desc = "",
+	Callback = function()
+		pcall(function()
+			ReplicatedStorage.Assets.FX.Combat:Destroy()
+			ReplicatedStorage.Assets.FX.DamageIndicator:Destroy()
+			ReplicatedStorage.Assets.FX.WaterSplash:Destroy()
+			ReplicatedStorage.Assets.FX.WaterSplash2:Destroy()
+			ReplicatedStorage.Assets.FX.DamageCounter:Destroy()
+			ReplicatedStorage.Assets.FX.Misc:Destroy()
+		end)
+	end
+})
+
