@@ -1,6 +1,8 @@
 repeat task.wait() until game:IsLoaded()
+repeat task.wait() until game.Players.LocalPlayer.Backpack
 repeat task.wait() until game.Players.LocalPlayer.Character
 repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerGui
+
 local Services = setmetatable({}, {__index = function(Self, Index)
 	return cloneref(game:GetService(Index))
 end})
@@ -22,6 +24,14 @@ local anticlip
 
 AllFuncs = {}
 Config = Config or {}
+
+NPCList = {}
+MobsName = {}
+QuestNpcLists = {}
+
+local SelectFarmMob = MobsName[1] or nil
+local SelectedNPC = NPCList[1] or nil
+local SelectedQuestNPC = QuestNpcLists[1] or nil
 
 function LoadSettings()
 	if readfile and writefile and isfile and isfolder then
@@ -182,12 +192,19 @@ end
 task.spawn(function()
 	while task.wait() do
 		pcall(function()
-			local isFarming = Config["Tp Select Location"] or Config["Tp Select Npc"] or Config["Auto Farm Select Mob"] or Config["Auto Sea Beast"]
+			local isFarming = Config["Tp Select Location"] 
+				or Config["Tp Select Npc"] or Config["Auto Farm Select Mob"] 
+				or Config["Auto Sea Beast"] or Config["Auto Farm Boss"]
+				or Config["Tp Select Quest Npc"]
 			if not anticlip and isFarming then
 				for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
 					if v:IsA("BasePart") then
 						v.CanCollide = false
 					end
+				end
+				if not LocalPlayer.Character:FindFirstChildOfClass("Highlight") then
+					local Highlight = Instance.new("Highlight", LocalPlayer.Character)
+					Highlight.FillColor = Color3.fromRGB(252, 15, 255)
 				end
 				if not LocalPlayer.Character.PrimaryPart:FindFirstChild("Velocity") then
 					local v = Instance.new("BodyVelocity",LocalPlayer.Character.PrimaryPart)
@@ -198,6 +215,9 @@ task.spawn(function()
 			else
 				if LocalPlayer.Character.PrimaryPart:FindFirstChild("Velocity") then
 					LocalPlayer.Character.PrimaryPart:FindFirstChild("Velocity"):Destroy()
+				end
+				if LocalPlayer.Character:FindFirstChildOfClass("Highlight") then
+					LocalPlayer.Character:FindFirstChildOfClass("Highlight"):Destroy()
 				end
 			end
 		end)
@@ -216,11 +236,8 @@ EquipWeapon = function(...)
 	end
 end
 
-NPCList = {}
-MobsName = {}
 
-local SelectFarmMob = MobsName[1] or nil
-local SelectedNPC = NPCList[1] or nil
+
 
 local TeleportLocations = {
 	["Air Jump"] = CFrame.new(3272.91992, 80.2837372, -4168.47998, 1, 0, 0, 0, 1, 0, 0, 0, 1),
@@ -270,6 +287,52 @@ local methodss = function()
 	end
 end
 
+local MultiAttack = function(Mob: Path)
+	local args = {
+		[1] = "DealDamage",
+		[2] = {
+			["Results"] = {
+				[1] = Mob,[2] = Mob,[3] = Mob,[4] = Mob,[5] = Mob,
+				[6] = Mob,[7] = Mob,[8] = Mob,[9] = Mob,[10] = Mob,
+			},
+			["Combo"] = 4,
+		}
+	}
+	ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CombatEvent"):FireServer(unpack(args))
+end
+
+function MultiAttack100Hit(Mob)
+	local args = {
+		[1] = "DealDamage",
+		[2] = {
+			["Results"] = {
+				[1] = Mob,[2] = Mob,[3] = Mob,[4] = Mob,[5] = Mob,
+				[6] = Mob,[7] = Mob,[8] = Mob,[9] = Mob,[10] = Mob,
+				[11] = Mob,[12] = Mob,[13] = Mob,[14] = Mob,[15] = Mob,
+				[16] = Mob,[17] = Mob,[18] = Mob,[19] = Mob,[20] = Mob,
+				[21] = Mob,[22] = Mob,[23] = Mob,[24] = Mob,[25] = Mob,
+				[26] = Mob,[27] = Mob,[28] = Mob,[29] = Mob,[30] = Mob,
+				[31] = Mob,[32] = Mob,[33] = Mob,[34] = Mob,[35] = Mob,
+				[36] = Mob,[37] = Mob,[38] = Mob,[39] = Mob,[40] = Mob,
+				[41] = Mob,[42] = Mob,[43] = Mob,[44] = Mob,[45] = Mob,
+				[46] = Mob,[47] = Mob,[48] = Mob,[49] = Mob,[50] = Mob,
+				[51] = Mob,[52] = Mob,[53] = Mob,[54] = Mob,[55] = Mob,
+				[56] = Mob,[57] = Mob,[58] = Mob,[59] = Mob,[60] = Mob,
+				[61] = Mob,[62] = Mob,[63] = Mob,[64] = Mob,[65] = Mob,
+				[66] = Mob,[67] = Mob,[68] = Mob,[69] = Mob,[70] = Mob,
+				[71] = Mob,[72] = Mob,[73] = Mob,[74] = Mob,[75] = Mob,
+				[76] = Mob,[77] = Mob,[78] = Mob,[79] = Mob,[80] = Mob,
+				[81] = Mob,[82] = Mob,[83] = Mob,[84] = Mob,[85] = Mob,
+				[86] = Mob,[87] = Mob,[88] = Mob,[89] = Mob,[90] = Mob,
+				[91] = Mob,[92] = Mob,[93] = Mob,[94] = Mob,[95] = Mob,
+				[96] = Mob,[97] = Mob,[98] = Mob,[99] = Mob,[100] = Mob,
+			},
+			["Combo"] = 4,
+		}
+	}
+	game:GetService("ReplicatedStorage"):WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CombatEvent"):FireServer(unpack(args))
+end
+
 AllFuncs["Tp Select Location"] = function()
 	while Config["Tp Select Location"] do
 		local targetLocation = TeleportLocations[SelectedLocation]
@@ -311,6 +374,24 @@ AllFuncs["Tp Select Npc"] = function()
 	end
 end
 
+AllFuncs["Tp Select Quest Npc"] = function()
+	while Config["Tp Select Quest Npc"] do task.wait()
+		xpcall(function()
+			for _,v in next, workspace.IgnoreList.Int.NPCs.Quests:GetChildren() do
+				if v:IsA("Folder") then
+					if v:FindFirstChildOfClass("Model") then
+						for _,NpcQuest in next, v:GetChildren() do
+							if NpcQuest:IsA("Model") and NpcQuest.Name == SelectedQuestNPC then
+								TP(NpcQuest.HumanoidRootPart.CFrame * CFrame.new(0,0,-2))
+							end
+						end
+					end
+				end
+			end
+		end, print)
+	end
+end
+
 
 
 for _,v in next, workspace.Playability.Enemys:GetChildren() do
@@ -334,29 +415,10 @@ AllFuncs["Auto Farm Select Mob"] = function()
 						if Mob:IsA("Model") then
 							if Mob.Name:match("^" .. SelectFarmMob .. "%d*$") then
 								repeat task.wait()
-									local args = {
-										[1] = "DealDamage",
-										[2] = {
-											["Results"] = {
-												[1] = Mob,
-												[2] = Mob,
-												[3] = Mob,
-												[4] = Mob,
-												[5] = Mob,
-												[6] = Mob,
-												[7] = Mob,
-												[8] = Mob,
-												[9] = Mob,
-												[10] = Mob,
-											},
-											["Combo"] = 1,
-										}
-									}
-									ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("CombatEvent"):FireServer(unpack(args))
-									
+									MultiAttack(Mob)
+
 									TP(Mob.HumanoidRootPart.CFrame * methodss())
 								until not Mob:GetAttribute("Respawned")
-								
 							end
 						end
 					end
@@ -390,6 +452,106 @@ end
 
 
 
+BossList = {"King Werewolf", "Mad Clown", "Pharaoh", "Ice King"}
+
+AllFuncs["Auto Farm Boss"] = function()
+	while Config["Auto Farm Boss"] do task.wait()
+		pcall(function()
+
+			if Config["Select Boss"] then
+				for _,v in next, workspace.Playability.Enemys:GetChildren() do
+					if v:IsA("Folder") then
+						for _,Mob in next, v:GetChildren() do
+							if Mob:IsA("Model") then
+								if Mob.Name:match("^" .. Config["Select Boss"] .. "%d*$") then
+									repeat task.wait()
+										MultiAttack(Mob)
+
+										TP(Mob.HumanoidRootPart.CFrame * methodss())
+									until not Mob:GetAttribute("Respawned")
+								end
+							end
+						end
+					end
+				end
+			end
+
+		end)
+	end
+end
+
+--Auto Quest
+
+function GetQuest(NpcName: string, QuestName: string)
+	local args = {
+		[1] = "Quests",
+		[2] = {
+			["NpcName"] = NpcName,
+			["QuestName"] = QuestName
+		}
+	}
+
+	ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("DialogueEvent"):FireServer(unpack(args))
+end
+
+AllFuncs["Auto Quest"] = function()
+	while Config["Auto Quest"] do task.wait()
+		pcall(function()
+
+			if not string.find(LocalPlayer.PlayerGui.MainUI.MainFrame.CurrentQuest.Objective.Text, SelectFarmMob) then
+				ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("QuestEvent"):FireServer("CancelQuest")
+			end
+
+			if SelectFarmMob == "Bandit" then
+				GetQuest("Bandits Hunter", "Defeat Bandits")
+			elseif SelectFarmMob == "Shadow Werewolf" then
+				GetQuest("Mark Hunter", "Defeat Shadow Werewolfs")
+			elseif SelectFarmMob == "Forest Hunter" then
+				GetQuest("Mark Hunter", "Defeat Forest Hunters")
+			elseif SelectFarmMob == "Pirate Bill" then
+				GetQuest("Joy Pirate Hunter", "Defeat Pirate Bills")
+			elseif SelectFarmMob == "Pirate Officer" then
+				GetQuest("Joy Pirate Hunter", "Defeat Pirate Officer")
+			elseif SelectFarmMob == "Desert Bandit" then
+				GetQuest("Paul", "Defeat Desert Bandits")
+			elseif SelectFarmMob == "Desert Guardian" then
+				GetQuest("Paul", "Defeat Desert Guardians")
+			elseif SelectFarmMob == "Frozen Warrior" then
+				GetQuest("Ryan Snow", "Defeat Frozen Warriors")
+			elseif SelectFarmMob == "Winter Soldier" then
+				GetQuest("Ryan Snow", "Defeat Winter Soldiers")
+			elseif SelectFarmMob == "Celestial Bandit" then
+				GetQuest("Pedro", "Defeat Celestial Bandits")
+			elseif SelectFarmMob == "Shadow Master" then
+				GetQuest("Pedro", "Defeat Shadow Masters")
+			end
+		end)
+	end
+end
+
+AllFuncs["Auto Boss Quest"] = function()
+	while Config["Auto Boss Quest"] do task.wait()
+		pcall(function()
+
+			if not string.find(LocalPlayer.PlayerGui.MainUI.MainFrame.CurrentQuest.Objective.Text, SelectFarmMob) then
+				ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("QuestEvent"):FireServer("CancelQuest")
+			end
+
+			if Config["Select Boss"] == "King Werewolf" then
+				GetQuest("Mark Hunter", "Defeat King Werewolf")
+			elseif Config["Select Boss"] == "Mad Clown" then
+				GetQuest("Joy Pirate Hunter", "Defeat Mad Clown")
+			elseif Config["Select Boss"] == "Pharaoh" then
+				GetQuest("Paul", "Defeat Pharaoh")
+			elseif Config["Select Boss"] == "Ice King" then
+				GetQuest("Ryan Snow", "Defeat Ice King")
+			end
+		end)
+	end
+end
+
+
+
 AllFuncs["Auto Chest"] = function()
 	while Config["Auto Chest"] do task.wait()
 		pcall(function()
@@ -399,6 +561,41 @@ AllFuncs["Auto Chest"] = function()
 					task.wait(0.5)
 					break
 				end
+			end
+		end)
+	end
+end
+
+AllFuncs["Auto Use Ken"] = function()
+	while Config["Auto Use Ken"] do task.wait()
+		pcall(function()
+			if not LocalPlayer.Character:GetAttribute("Kenbushoku") then
+				ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("MiscPowersEvent"):FireServer("Kenbushoku")
+				task.wait(0.5)	
+			end
+		end)
+	end
+end
+
+AllFuncs["Auto Use Buso"] = function()
+	while Config["Auto Use Buso"] do task.wait()
+		pcall(function()
+			if not LocalPlayer.Character:GetAttribute("Busoshoku") then
+				ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("MiscPowersEvent"):FireServer("Busoshoku")
+				task.wait(0.5)	
+			end
+		end)
+	end
+end
+
+
+
+AllFuncs["Auto Blackbeard"] = function()
+	while Config["Auto Blackbeard"] do task.wait()
+		pcall(function()
+			if workspace.Playability.SpecialEnemys:FindFirstChild("Blackbeard") then
+				LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.Playability.SpecialEnemys.Blackbeard.HumanoidRootPart.CFrame
+				MultiAttack100Hit(workspace.Playability.SpecialEnemys.Blackbeard)
 			end
 		end)
 	end
@@ -436,77 +633,40 @@ local function UpdateWeaponList()
 	return weaponList
 end
 
-local WeaponList = UpdateWeaponList()
+
+for _,v in next, workspace.IgnoreList.Int.NPCs.Quests:GetChildren() do
+	if v:IsA("Folder") then
+		if v:FindFirstChildOfClass("Model") then
+			for _,QuestNpc in next, v:GetChildren() do
+				if QuestNpc:IsA("Model") then
+					table.insert(QuestNpcLists, QuestNpc.Name)
+				end
+			end
+		end
+	end
+end
+
+
 
 
 AllFuncs["Auto Equip"] = function()
 	while Config["Auto Equip"] do task.wait()
 		pcall(function()
 			if Config["Select Weapon"] then
-				EquipWeapon(Config["Select Weapon"])
+				for _,v in next, Config["Select Weapon"] do
+					for _,ItemBackpack in next, LocalPlayer.Backpack:GetChildren() do
+						if ItemBackpack:IsA("Tool") and ItemBackpack.Name == v then
+							EquipWeapon(ItemBackpack.Name)
+							task.wait()
+						end
+					end
+				end
 			end
 		end)
 	end
 end
 
---Auto Quest
 
-local QuestData = {
-	["Quest Bandit"] = {
-		remote = function()
-			local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.DialogueEvent
-			Event:FireServer(
-				"Quests",
-				{
-					NpcName = "Bandits Hunter",
-					QuestName = "Defeat Bandits"
-				}
-			)
-		end
-	},
-	["Quest Marine"] = {
-		remote = function()
-			local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.DialogueEvent
-			Event:FireServer(
-				"Quests",
-				{
-					NpcName = "Marine Officer",
-					QuestName = "Defeat Pirates"
-				}
-			)
-		end
-	},
-	["Quest Pirate"] = {
-		remote = function()
-			local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.DialogueEvent
-			Event:FireServer(
-				"Quests",
-				{
-					NpcName = "Pirate Captain",
-					QuestName = "Collect Treasure"
-				}
-			)
-		end
-	}
-}
-
-local QuestList = {}
-for questName, _ in pairs(QuestData) do
-	table.insert(QuestList, questName)
-end
-
-local SelectedQuest = QuestList[1] or nil
-
-AllFuncs["Auto Quest"] = function()
-	while Config["Auto Quest"] do
-		task.wait(2)
-		pcall(function()
-			if SelectedQuest and QuestData[SelectedQuest] then
-				QuestData[SelectedQuest].remote()
-			end
-		end)
-	end
-end
 
 local function UpdateFruitList()
 	local FruitList = {}
@@ -520,6 +680,41 @@ local function UpdateFruitList()
 	return FruitList
 end
 
+
+
+
+local function openFruitShop()
+	local targetCFrame = CFrame.new(2021.43323, 27.757513, -1059.82874, -0.513770759, -4.67244554e-08, -0.857927501, -4.77656421e-08, 1, -2.58575081e-08, 0.857927501, 2.76946253e-08, -0.513770759)
+	TP(targetCFrame)
+	task.wait(2)
+
+	local fruitDealer = workspace.IgnoreList.Int.NPCs.Shops["Foosha Village"]["Fruit Dealer (Foosha Village)"]
+	local camera = workspace.CurrentCamera
+	local VIM = game:GetService("VirtualInputManager")
+	local head = fruitDealer:FindFirstChild("Head")
+
+	if head then
+		camera.CFrame = CFrame.lookAt(camera.CFrame.Position, head.Position)
+		wait(0.1)
+		VIM:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+		VIM:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+		wait(1)
+		VIM:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+		VIM:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+		wait(1)
+
+		local interact = function(path)
+			repeat task.wait() game:GetService("GuiService").SelectedObject = path until game:GetService("GuiService").SelectedObject == path
+			VIM:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+			VIM:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+			repeat task.wait() game:GetService("GuiService").SelectedObject = nil until game:GetService("GuiService").SelectedObject == nil
+		end
+
+		interact(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.MainFrame.Dialogue.Option1)
+		camera.CameraType = Enum.CameraType.Custom
+	end
+end
+
 local FruitMap = {
 	["Kilo"] = 1, ["Divide"] = 2, ["Elastic"] = 3, ["Boom"] = 4, ["Dust"] = 5,
 	["Blaze"] = 6, ["Shine"] = 7, ["Frozen"] = 8, ["Eclipse"] = 9, ["Vulcanic"] = 10,
@@ -527,17 +722,23 @@ local FruitMap = {
 }
 
 AllFuncs["Auto Buy Fruit"] = function()
-	while Config["Auto Buy Fruit"] do task.wait(300)
+	while Config["Auto Buy Fruit"] do
+		task.wait(1)
 		pcall(function()
 			if Config["Selected Fruit"] then
-				local selectedFruits = type(Config["Selected Fruit"]) == "table" and Config["Selected Fruit"] or {Config["Selected Fruit"]}
+				local selectedFruit = Config["Selected Fruit"]:match("^(.-)%s*[✅❌]?$")
 
-				for _, selectedItem in pairs(selectedFruits) do
-					if selectedItem:find("✅") then
-						local fruitName = selectedItem:match("^(.-)%s*✅")
-						if FruitMap[fruitName] then
-							game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.FruitShopEvent:FireServer("Buy", FruitMap[fruitName])
-							break
+				for _, frame in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.AnotherMenus.FruitShopFrame.ScrollingFrame:GetChildren()) do
+					if frame:IsA("ImageButton") and frame.Name == "InStockFrame" and frame:FindFirstChild("FruitName") then
+						local fruitText = frame.FruitName.Text
+
+						if fruitText == selectedFruit then
+							local fruitId = FruitMap[fruitText]
+							if fruitId then
+								local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.FruitShopEvent
+								Event:FireServer("Buy", fruitId)
+								task.wait(5)
+							end
 						end
 					end
 				end
@@ -545,6 +746,42 @@ AllFuncs["Auto Buy Fruit"] = function()
 		end)
 	end
 end
+
+local FruitBuyList = {}
+for fruitName, _ in pairs(FruitMap) do
+	table.insert(FruitBuyList, fruitName)
+end
+
+AllFuncs["Auto Buy Fruit"] = function()
+	while Config["Auto Buy Fruit"] do
+		task.wait(5)
+		pcall(function()
+			if Config["Select Fruit to Buy"] then
+				local selectedFruit = Config["Select Fruit to Buy"]
+
+				for _, imageButton in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainUI.AnotherMenus.FruitShopFrame.ScrollingFrame:GetChildren()) do
+					if imageButton:IsA("ImageButton") and imageButton.Name == "InStockFrame" then
+						if imageButton:FindFirstChild("FruitName") then
+							local fruitNameText = imageButton.FruitName.Text
+
+							if fruitNameText == selectedFruit then
+								local fruitId = FruitMap[selectedFruit]
+								if fruitId then
+									local Event = game:GetService("ReplicatedStorage").BetweenSides.Remotes.Events.FruitShopEvent
+									Event:FireServer("Buy", fruitId)
+									task.wait(1)
+								end
+								break
+							end
+						end
+					end
+				end
+			end
+		end)
+	end
+end
+
+
 
 LoadSettings()
 
@@ -613,9 +850,68 @@ AddToggle(Tabs.Main, {
 	Title = "Auto Farm Select Mob",
 	Default = Config["Auto Farm Select Mob"],
 	Callback = function(bool)
-		
+
 	end
 })
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Quest",
+	Default = Config["Auto Quest"],
+	Callback = function(bool)
+
+	end
+})
+
+Tabs.Main:Section({Title = 'Haki'})
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Use Buso",
+	Default = Config["Auto Use Buso"],
+	Callback = function(bool)
+
+	end
+})
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Use Ken",
+	Default = Config["Auto Use Ken"],
+	Callback = function(bool)
+
+	end
+})
+
+Tabs.Main:Section({Title = 'Boss'})
+
+
+
+AddDropdown(Tabs.Main, {
+	Title = "Select Boss",
+	Desc = "Choose Boss For Auto Farm Boss",
+	List = BossList,
+	Multi = false,
+	Value = Config["Select Boss"],
+	Callback = function(value)
+		Config["Select Boss"] = value
+	end
+})
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Boss Quest",
+	Default = Config["Auto Boss Quest"],
+	Callback = function(bool)
+
+	end
+})
+
+AddToggle(Tabs.Main, {
+	Title = "Auto Farm Boss",
+	Default = Config["Auto Farm Boss"],
+	Callback = function(bool)
+
+	end
+})
+
+
 
 Tabs.Main:Section({Title = 'Skill'})
 
@@ -642,11 +938,11 @@ AddToggle(Tabs.Main, {
 
 Tabs.Main:Section({Title = 'Equip Weapon'})
 
-local WeaponDropdown = AddDropdown(Tabs.Main, {
+WeaponDropdown = AddDropdown(Tabs.Main, {
 	Title = "Select Weapon",
 	Desc = "Choose Weapon For Auto Farm",
-	List = WeaponList,
-	Multi = false,
+	List = UpdateWeaponList(),
+	Multi = true,
 	Value = Config["Select Weapon"],
 	Callback = function(value)
 		Config["Select Weapon"] = value
@@ -654,14 +950,20 @@ local WeaponDropdown = AddDropdown(Tabs.Main, {
 })
 
 AddButton(Tabs.Main, {
-	Title = "Refresh Weapon",
-	Description = "Update weapon",
+	Title = "🔄 Refresh Weapons",
+	Description = "Reload weapon list",
 	Callback = function()
-		WeaponList = UpdateWeaponList()
-		WeaponDropdown:SetList(WeaponList)
-		print("Weapon re" .. #WeaponList .. " weapons")
+		local Weapons = UpdateWeaponList()
+		WeaponDropdown:Clear()
+		for _,v in next, Weapons do
+			WeaponDropdown:Add(v)
+		end
+		
 	end
 })
+
+--
+
 
 
 AddToggle(Tabs.Main, {
@@ -679,7 +981,7 @@ AddToggle(Tabs.Automathic, {
 	Title = "Auto Sea Beast",
 	Default = Config["Auto Sea Beast"],
 	Callback = function(bool)
-		
+
 	end
 })
 
@@ -695,41 +997,56 @@ AddToggle(Tabs.Automathic, {
 
 Tabs.Automathic:Section({Title = 'Fruit'})
 
-local FruitDropdown = AddDropdown(Tabs.Automathic, {
-	Title = "Fruit Shop",
-	List = UpdateFruitList(),
-	Value = Config["Fruit Shop"],
-	Callback = function(value)
-		Config["Selected Fruit"] = value
-	end
-})
+
 
 task.spawn(function()
 	while true do
 		task.wait(300)
-		FruitDropdown:SetList(UpdateFruitList())
+		--FruitDropdown:SetList(UpdateFruitList())
 	end
 end)
+
+AddDropdown(Tabs.Automathic, {
+	Title = "Select Fruit to Buy",
+	Desc = "Choose fruit to buy automatically",
+	List = FruitBuyList,
+	Value = Config["Select Fruit to Buy"],
+	Callback = function(value)
+		Config["Select Fruit to Buy"] = value
+	end
+})
 
 AddToggle(Tabs.Automathic, {
 	Title = "Auto Buy Fruit",
 	Default = Config["Auto Buy Fruit"],
 	Callback = function(bool)
-		Config["Auto Buy Fruit"] = bool
-		if bool then
-			task.spawn(AllFuncs["Auto Buy Fruit"])
-		end
 	end
 })
+Tabs.Automathic:Section({Title = 'ใช้ Open Fruit shop ก่อน Auto Buy ทุกครั้ง'})
+
+
+AddButton(Tabs.Automathic, {
+	Title = "Open Fruit Shop",
+	Callback = openFruitShop
+})
+
+
+AddButton(Tabs.Automathic, {
+	Title = "Refresh Fruit",
+	Callback = function()
+		FruitDropdown:SetList(UpdateFruitList())
+	end
+})
+
 
 
 Tabs.TP:Section({Title = 'Teleport Location'})
 
 AddDropdown(Tabs.TP, {
-	Title = "Select Location",
+	Title = "Select Island Location",
 	Desc = "Choose teleport destination",
 	List = LocationList,
-	Value = Config["Select Location"],
+	Value = Config["Select Island Location"],
 	Callback = function(value)
 		SelectedLocation = value
 	end
@@ -744,10 +1061,10 @@ AddToggle(Tabs.TP, {
 
 
 AddDropdown(Tabs.TP, {
-	Title = "NPC TP",
-	Desc = "Choose NPC to teleport",
+	Title = "Select Npc",
+	Desc = "Select NPC to teleport",
 	List = NPCList,
-	Value = Config["NPC TP"],
+	Value = Config["Select Npc"],
 	Callback = function(value)
 		SelectedNPC = value
 	end
@@ -759,6 +1076,25 @@ AddToggle(Tabs.TP, {
 	Callback = function(bool)
 	end
 })
+
+AddDropdown(Tabs.TP, {
+	Title = "Select Quest Npc",
+	Desc = "Select Quest Npc to teleport",
+	List = QuestNpcLists,
+	Value = Config["Select Quest Npc"],
+	Callback = function(value)
+		SelectedQuestNPC = value
+	end
+})
+
+AddToggle(Tabs.TP, {
+	Title = "Tp Select Quest Npc",
+	Default = Config["Tp Select Quest Npc"],
+	Callback = function(bool)
+	end
+})
+
+
 
 
 Tabs.Setting:Section({Title = 'Settings'})
@@ -786,3 +1122,8 @@ AddButton(Tabs.Setting, {
 	end
 })
 
+
+LocalPlayer.Idled:Connect(function()
+	game:GetService("VirtualUser"):CaptureController()
+	game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
