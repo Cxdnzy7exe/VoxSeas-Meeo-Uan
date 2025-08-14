@@ -581,17 +581,17 @@ AllFuncs["Auto Boss Quest"] = function()
 				GetQuest("Ryan Snow", "Defeat Ice King")
 			elseif Config["Select Boss"] == "Vice Admiral" then
 				GetQuest("Olliver", "Defeat Vice Admiral")
-			elseif SelectFarmMob == "Admiral Vulkran" then
+			elseif Config["Select Boss"] == "Admiral Vulkran" then
 				GetQuest("Clay", "Defeat Admiral Vulkran")
-			elseif SelectFarmMob == "Lord Triton" then
+			elseif Config["Select Boss"] == "Lord Triton" then
 				GetQuest("King Tritan", "Defeat Lord Triton")
-			elseif SelectFarmMob == "Wysper" then
+			elseif Config["Select Boss"] == "Wysper" then
 				GetQuest("Jhon", "Defeat Wysper")
-			elseif SelectFarmMob == "Thunder God" then
+			elseif Config["Select Boss"] == "Thunder God" then
 				GetQuest("Sam", "Defeat Thunder God")
-			elseif SelectFarmMob == "Abandoned Experiment" then
+			elseif Config["Select Boss"] == "Abandoned Experiment" then
 				GetQuest("Arthur", "Defeat Abandoned Experiment")
-			elseif SelectFarmMob == "EX-77 Ironfist" then
+			elseif Config["Select Boss"] == "EX-77 Ironfist" then
 				GetQuest("Scientist", "Defeat EX-77 Ironfist")
 			end
 		end, print)
@@ -835,7 +835,7 @@ LoadSettings()
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Dummyrme/Library/refs/heads/main/Free.lua'))()
 local Window = Library:Window({
-	Title = 'Vox Sea Realtime Mode | By Maeo Uan',
+	Title = 'Vox Sea Maybe real | By Maeo Uan',
 	Desc = 'Made By Candy, Xin',
 	Icon = 97389610434708,
 	Theme = 'Amethyst',
