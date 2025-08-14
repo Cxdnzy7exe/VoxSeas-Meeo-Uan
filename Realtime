@@ -452,7 +452,7 @@ end
 
 
 
-BossList = {"King Werewolf", "Mad Clown", "Pharaoh", "Ice King", "Vice Admiral", "Admiral Vulkran" , "Lord Triton", "Wandering Soul"}
+BossList = {"King Werewolf", "Mad Clown", "Pharaoh", "Ice King", "Vice Admiral", "Admiral Vulkran" , "Lord Triton", "Wysper", "Thunder God", "Abandoned Experiment", "EX-77 Ironfist", "Wandering Soul"}
 
 AllFuncs["Auto Farm Boss"] = function()
 	while Config["Auto Farm Boss"] do task.wait()
@@ -542,6 +542,22 @@ AllFuncs["Auto Quest"] = function()
 				GetQuest("King Tritan", "Defeat Fishmans")
 			elseif SelectFarmMob == "Triton Warrior" then
 				GetQuest("King Tritan", "Defeat Triton Warriors")
+			elseif SelectFarmMob == "Divine Guardian" then
+				GetQuest("Jhon", "Defeat Divine Guardians")
+			elseif SelectFarmMob == "Shanda" then
+				GetQuest("Jhon", "Defeat Shandas")
+			elseif SelectFarmMob == "Royal Squadron" then
+				GetQuest("Sam", "Defeat Royal Squadrons")
+			elseif SelectFarmMob == "Royal Soldier" then
+				GetQuest("Sam", "Defeat Royal Soldiers")
+			elseif SelectFarmMob == "Pirate Fighter" then
+				GetQuest("Arthur", "Defeat Pirate Fighters")
+			elseif SelectFarmMob == "Pirate Henchman" then
+				GetQuest("Arthur", "Defeat Pirate Henchmans")
+			elseif SelectFarmMob == "Experiment #13" then
+				GetQuest("Scientist", "Defeat Experiment #13s")
+			elseif SelectFarmMob == "Experiment #14" then
+				GetQuest("Scientist", "Defeat Experiment #14s")
 			end
 		end)
 	end
@@ -569,6 +585,14 @@ AllFuncs["Auto Boss Quest"] = function()
 				GetQuest("Clay", "Defeat Admiral Vulkran")
 			elseif SelectFarmMob == "Lord Triton" then
 				GetQuest("King Tritan", "Defeat Lord Triton")
+			elseif SelectFarmMob == "Wysper" then
+				GetQuest("Jhon", "Defeat Wysper")
+			elseif SelectFarmMob == "Thunder God" then
+				GetQuest("Sam", "Defeat Thunder God")
+			elseif SelectFarmMob == "Abandoned Experiment" then
+				GetQuest("Arthur", "Defeat Abandoned Experiment")
+			elseif SelectFarmMob == "EX-77 Ironfist" then
+				GetQuest("Scientist", "Defeat EX-77 Ironfist")
 			end
 		end, print)
 	end
@@ -811,7 +835,7 @@ LoadSettings()
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Dummyrme/Library/refs/heads/main/Free.lua'))()
 local Window = Library:Window({
-	Title = 'Vox Sea | By Maeo Uan',
+	Title = 'Vox Sea Realtime Mode | By Maeo Uan',
 	Desc = 'Made By Candy, Xin',
 	Icon = 97389610434708,
 	Theme = 'Amethyst',
