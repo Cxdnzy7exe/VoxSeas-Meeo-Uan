@@ -26,7 +26,7 @@ AllFuncs = {}
 Config = Config or {}
 
 NPCList = {}
-MobsName = {}
+MobsName = {"Bandit","Shadow Werewolf","Forest Hunter","Pirate Bill","Pirate Officer","Desert Bandit","Desert Guardian","Frozen Warrior","Winter Soldier","Marine Officer","Celestial Bandit","Shadow Master","Prisoner","Dangerous Prisoner","Veteran Gladiator","Veteran Warrior","Magma Soldier","Magma Spy","Fishman","Triton Warrior","Divine Guardian","Shanda","Royal Squadron","Royal Soldier","Pirate Fighter","Pirate Henchman","Experiment #13","Experiment #14"}
 QuestNpcLists = {}
 
 local SelectFarmMob = MobsName[1] or nil
@@ -394,17 +394,17 @@ end
 
 
 
-for _,v in next, workspace.Playability.Enemys:GetChildren() do
-	if v:IsA("Folder") then
-		for _,Mob in next, v:GetChildren() do
-			local NameMob = Mob.Name:gsub("%d+$", "")
+--for _,v in next, workspace.Playability.Enemys:GetChildren() do
+--	if v:IsA("Folder") then
+--		for _,Mob in next, v:GetChildren() do
+--			local NameMob = Mob.Name:gsub("%d+$", "")
 
-			if not table.find(MobsName, NameMob) then
-				table.insert(MobsName, NameMob)
-			end
-		end
-	end
-end
+--			if not table.find(MobsName, NameMob) then
+--				table.insert(MobsName, NameMob)
+--			end
+--		end
+--	end
+--end
 
 AllFuncs["Auto Farm Select Mob"] = function()
 	while Config["Auto Farm Select Mob"] do task.wait()
@@ -493,6 +493,8 @@ function GetQuest(NpcName: string, QuestName: string)
 
 	ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("DialogueEvent"):FireServer(unpack(args))
 end
+
+
 
 AllFuncs["Auto Quest"] = function()
 	while Config["Auto Quest"] do task.wait()
@@ -835,7 +837,7 @@ LoadSettings()
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Dummyrme/Library/refs/heads/main/Free.lua'))()
 local Window = Library:Window({
-	Title = 'Vox Sea Maybe real | By Maeo Uan',
+	Title = 'Vox Sea | By Maeo Uan [ Realtime ]',
 	Desc = 'Made By Candy, Xin',
 	Icon = 97389610434708,
 	Theme = 'Amethyst',
