@@ -535,7 +535,7 @@ AllFuncs["Auto Quest"] = function()
 			elseif SelectFarmMob == "Veteran Gladiator" then
 				GetQuest("Dex", "Defeat Veteran Gladiators")
 			elseif SelectFarmMob == "Veteran Warrior" then
-				GetQuest("Dex", "Defeat Veteran Warriors")
+				GetQuest("Dex", "Defeat Veteran Warrior")
 			elseif SelectFarmMob == "Magma Soldier" then
 				GetQuest("Clay", "Defeat Magma Soldiers")
 			elseif SelectFarmMob == "Magma Spy" then
@@ -551,7 +551,7 @@ AllFuncs["Auto Quest"] = function()
 			elseif SelectFarmMob == "Royal Squadron" then
 				GetQuest("Sam", "Defeat Royal Squadrons")
 			elseif SelectFarmMob == "Royal Soldier" then
-				GetQuest("Sam", "Defeat Royal Soldiers")
+				GetQuest("Sam", "Defeat Royal Soldier")
 			elseif SelectFarmMob == "Pirate Fighter" then
 				GetQuest("Arthur", "Defeat Pirate Fighters")
 			elseif SelectFarmMob == "Pirate Henchman" then
@@ -837,7 +837,7 @@ LoadSettings()
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Dummyrme/Library/refs/heads/main/Free.lua'))()
 local Window = Library:Window({
-	Title = 'Vox Sea Maybe fix all | By Maeo Uan',
+	Title = 'Vox Sea | By Maeo Uan [ I Think Fix Quest All ]',
 	Desc = 'Made By Candy, Xin',
 	Icon = 97389610434708,
 	Theme = 'Amethyst',
