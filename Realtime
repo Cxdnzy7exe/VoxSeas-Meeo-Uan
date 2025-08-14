@@ -564,7 +564,7 @@ AllFuncs["Auto Boss Quest"] = function()
 			elseif Config["Select Boss"] == "Ice King" then
 				GetQuest("Ryan Snow", "Defeat Ice King")
 			elseif Config["Select Boss"] == "Vice Admiral" then
-				GetQuest("Ryan Snow", "Defeat Vice Admiral")
+				GetQuest("Olliver", "Defeat Vice Admiral")
 			elseif SelectFarmMob == "Admiral Vulkran" then
 				GetQuest("Clay", "Defeat Admiral Vulkran")
 			elseif SelectFarmMob == "Lord Triton" then
@@ -811,7 +811,7 @@ LoadSettings()
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Dummyrme/Library/refs/heads/main/Free.lua'))()
 local Window = Library:Window({
-	Title = 'vox realtime',
+	Title = 'Vox Sea 2222',
 	Desc = 'Made By Candy, Xin',
 	Icon = 97389610434708,
 	Theme = 'Amethyst',
