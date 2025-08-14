@@ -26,7 +26,8 @@ AllFuncs = {}
 Config = Config or {}
 
 NPCList = {}
-MobsName = {}
+MobsName = {"Bandit","Shadow Werewolf","Forest Hunter","Pirate Bill","Pirate Officer","Desert Bandit","Desert Guardian","Frozen Warrior","Winter Soldier","Marine Officer","Celestial Bandit","Shadow Master","Prisoner","Dangerous Prisoner","Veteran Gladiator","Veteran Warrior","Magma Soldier","Magma Spy","Fishman","Triton Warrior","Divine Guardian","Shanda","Royal Squadron","Royal Soldier","Pirate Fighter","Pirate Henchman","Experiment #13","Experiment #14"}
+BossList = {"King Werewolf", "Mad Clown", "Pharaoh", "Ice King", "Vice Admiral", "Admiral Vulkran" , "Lord Triton", "Wysper", "Thunder God", "Abandoned Experiment", "EX-77 Ironfist", "Wandering Soul"}
 QuestNpcLists = {}
 
 local SelectFarmMob = MobsName[1] or nil
@@ -394,17 +395,17 @@ end
 
 
 
-for _,v in next, workspace.Playability.Enemys:GetChildren() do
-	if v:IsA("Folder") then
-		for _,Mob in next, v:GetChildren() do
-			local NameMob = Mob.Name:gsub("%d+$", "")
+--for _,v in next, workspace.Playability.Enemys:GetChildren() do
+--	if v:IsA("Folder") then
+--		for _,Mob in next, v:GetChildren() do
+--			local NameMob = Mob.Name:gsub("%d+$", "")
 
-			if not table.find(MobsName, NameMob) then
-				table.insert(MobsName, NameMob)
-			end
-		end
-	end
-end
+--			if not table.find(MobsName, NameMob) then
+--				table.insert(MobsName, NameMob)
+--			end
+--		end
+--	end
+--end
 
 AllFuncs["Auto Farm Select Mob"] = function()
 	while Config["Auto Farm Select Mob"] do task.wait()
@@ -452,7 +453,7 @@ end
 
 
 
-BossList = {"King Werewolf", "Mad Clown", "Pharaoh", "Ice King"}
+
 
 AllFuncs["Auto Farm Boss"] = function()
 	while Config["Auto Farm Boss"] do task.wait()
@@ -494,6 +495,8 @@ function GetQuest(NpcName: string, QuestName: string)
 	ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("DialogueEvent"):FireServer(unpack(args))
 end
 
+
+
 AllFuncs["Auto Quest"] = function()
 	while Config["Auto Quest"] do task.wait()
 		pcall(function()
@@ -520,10 +523,44 @@ AllFuncs["Auto Quest"] = function()
 				GetQuest("Ryan Snow", "Defeat Frozen Warriors")
 			elseif SelectFarmMob == "Winter Soldier" then
 				GetQuest("Ryan Snow", "Defeat Winter Soldiers")
+			elseif SelectFarmMob == "Marine Officer" then
+				GetQuest("Olliver", "Defeat Marine Officers")
 			elseif SelectFarmMob == "Celestial Bandit" then
 				GetQuest("Pedro", "Defeat Celestial Bandits")
 			elseif SelectFarmMob == "Shadow Master" then
 				GetQuest("Pedro", "Defeat Shadow Masters")
+			elseif SelectFarmMob == "Prisoner" then
+				GetQuest("Jonas", "Defeat Prisoners")
+			elseif SelectFarmMob == "Dangerous Prisoner" then
+				GetQuest("Jonas", "Defeat Dangerous Prisoners")
+			elseif SelectFarmMob == "Veteran Gladiator" then
+				GetQuest("Dex", "Defeat Veteran Gladiators")
+			elseif SelectFarmMob == "Veteran Warrior" then
+				GetQuest("Dex", "Defeat Veteran Warrior")
+			elseif SelectFarmMob == "Magma Soldier" then
+				GetQuest("Clay", "Defeat Magma Soldiers")
+			elseif SelectFarmMob == "Magma Spy" then
+				GetQuest("Clay", "Defeat Magma Spys")
+			elseif SelectFarmMob == "Fishman" then
+				GetQuest("King Tritan", "Defeat Fishmans")
+			elseif SelectFarmMob == "Triton Warrior" then
+				GetQuest("King Tritan", "Defeat Triton Warriors")
+			elseif SelectFarmMob == "Divine Guardian" then
+				GetQuest("Jhon", "Defeat Divine Guardians")
+			elseif SelectFarmMob == "Shanda" then
+				GetQuest("Jhon", "Defeat Shandas")
+			elseif SelectFarmMob == "Royal Squadron" then
+				GetQuest("Sam", "Defeat Royal Squadrons")
+			elseif SelectFarmMob == "Royal Soldier" then
+				GetQuest("Sam", "Defeat Royal Soldier")
+			elseif SelectFarmMob == "Pirate Fighter" then
+				GetQuest("Arthur", "Defeat Pirate Fighters")
+			elseif SelectFarmMob == "Pirate Henchman" then
+				GetQuest("Arthur", "Defeat Pirate Henchmans")
+			elseif SelectFarmMob == "Experiment #13" then
+				GetQuest("Scientist", "Defeat Experiment #13")
+			elseif SelectFarmMob == "Experiment #14" then
+				GetQuest("Scientist", "Defeat Experiment #14")
 			end
 		end)
 	end
@@ -531,9 +568,9 @@ end
 
 AllFuncs["Auto Boss Quest"] = function()
 	while Config["Auto Boss Quest"] do task.wait()
-		pcall(function()
+		xpcall(function()
 
-			if not string.find(LocalPlayer.PlayerGui.MainUI.MainFrame.CurrentQuest.Objective.Text, SelectFarmMob) then
+			if not string.find(LocalPlayer.PlayerGui.MainUI.MainFrame.CurrentQuest.Objective.Text, Config["Select Boss"]) then
 				ReplicatedStorage:WaitForChild("BetweenSides"):WaitForChild("Remotes"):WaitForChild("Events"):WaitForChild("QuestEvent"):FireServer("CancelQuest")
 			end
 
@@ -545,8 +582,22 @@ AllFuncs["Auto Boss Quest"] = function()
 				GetQuest("Paul", "Defeat Pharaoh")
 			elseif Config["Select Boss"] == "Ice King" then
 				GetQuest("Ryan Snow", "Defeat Ice King")
+			elseif Config["Select Boss"] == "Vice Admiral" then
+				GetQuest("Olliver", "Defeat Vice Admiral")
+			elseif Config["Select Boss"] == "Admiral Vulkran" then
+				GetQuest("Clay", "Defeat Admiral Vulkran")
+			elseif Config["Select Boss"] == "Lord Triton" then
+				GetQuest("King Tritan", "Defeat Lord Triton")
+			elseif Config["Select Boss"] == "Wysper" then
+				GetQuest("Jhon", "Defeat Wysper")
+			elseif Config["Select Boss"] == "Thunder God" then
+				GetQuest("Sam", "Defeat Thunder God")
+			elseif Config["Select Boss"] == "Abandoned Experiment" then
+				GetQuest("Arthur", "Defeat Abandoned Experiment")
+			elseif Config["Select Boss"] == "EX-77 Ironfist" then
+				GetQuest("Scientist", "Defeat EX-77 Ironfist")
 			end
-		end)
+		end, print)
 	end
 end
 
@@ -782,7 +833,6 @@ AllFuncs["Auto Buy Fruit"] = function()
 end
 
 
-
 LoadSettings()
 
 
@@ -806,6 +856,7 @@ local Tabs = {
 	Automathic = Window:Tab({Title = 'Automathic', Icon = 'align-left'}),
 	TP = Window:Tab({Title = 'TP', Icon = 'map-pin'}),
 	Setting = Window:Tab({Title = 'Setting', Icon = 'hammer'}),
+	Player = Window:Tab({Title = 'Player', Icon = 'map-pin'}),
 }
 
 
@@ -1031,12 +1082,7 @@ AddButton(Tabs.Automathic, {
 })
 
 
-AddButton(Tabs.Automathic, {
-	Title = "Refresh Fruit",
-	Callback = function()
-		FruitDropdown:SetList(UpdateFruitList())
-	end
-})
+
 
 
 
